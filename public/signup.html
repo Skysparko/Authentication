@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up</title>
+  </head>
+  <body>
+    <h1>Sign Up</h1>
+
+    <input type="text" name="name" id="name" />
+    <input type="email" name="email" id="email" />
+    <input type="password" name="password" id="password" />
+    <input type="checkbox" name="visible" id="visible" onclick="myFunction()" />
+    <button type="submit" id="submit">Sign Up</button>
+
+    <script>
+      function myFunction() {
+        var x = document.getElementById("password");
+        if (x.type === "password") {
+          x.type = "text";
+        } else {
+          x.type = "password";
+        }
+      }
+      const submit = document.querySelector("#submit");
+      const name = document.getElementById("name");
+      const email = document.getElementById("email");
+      const pwd = document.getElementById("password");
+      submit.addEventListener("click", async () => {
+        let user = {
+          name: name.value,
+          email: email.value,
+          password: pwd.value,
+        };
+
+        console.log(user);
+
+        let request = await fetch("http://localhost:4321/api/v1/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          crossDomain: true,
+          body: JSON.stringify(user),
+        });
+
+        let message = await request.text();
+
+        console.log(message);
+
+        alert(message);
+      });
+    </script>
+  </body>
+</html>
