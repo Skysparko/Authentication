@@ -1,61 +1,83 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const createDB = require("../config/db");
 const {
   validateName,
   validateEmail,
   validatePassword,
 } = require("../utils/validators");
-const users = {};
+
+const User = require("../models/userModels");
+const { where } = require("sequelize");
+
+createDB.sync().then(() => {
+  console.log("DB is running");
+});
 
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    console.log(name, email, password);
 
-    const userExist = users.hasOwnProperty(email);
-
+    const userExist = await User.findOne({
+      where: {
+        email,
+      },
+    });
     if (userExist) {
-      res.send("user exists");
+      return res.status(403).send("user exists");
     }
 
     if (!validateName(name)) {
-      res.send("invalid name");
+      return res.status(400).send("invalid name");
     }
     if (!validateEmail(email)) {
-      res.send("invalid email");
+      return res.status(400).send("invalid email");
     }
     if (!validatePassword(password)) {
-      res.send("invalid password");
+      return res.status(400).send("invalid password");
     }
 
     const Epassword = await bcrypt.hash(password, 10);
-    console.log(Epassword);
 
-    users[email] = { name, password: Epassword };
-    res.send("sucsess");
+    const saveToDB = {
+      name,
+      email,
+      password: Epassword,
+    };
+
+    const createdUser = await User.create(saveToDB);
+
+    return res.status(201).send(createdUser);
   } catch (e) {
-    res.send(e);
+    return res.status(500).send(e.message);
   }
 });
 
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
-    const userExist = users.hasOwnProperty(email);
+    let userExist = await User.findOne({
+      where: {
+        email,
+      },
+    });
 
     if (!userExist) {
-      res.send("bro create a account first");
+      return res.status(403).send("bro create a account first");
     }
-    const pwdMatch = await bcrypt.compare(password, users[email].password);
+
+    console.log(userExist.password);
+
+    let pwdMatch = await bcrypt.compare(password, userExist.password);
 
     if (!pwdMatch) {
-      res.send("at least enter right pass bro");
-    } else {
-      res.send("sucess");
+      return res.status(400).send("at least enter right pass bro");
     }
+
+    return res.status(200).send("sucess");
   } catch (error) {
-    res.send("error");
+    return res.status(500).send(error.message);
   }
 });
 

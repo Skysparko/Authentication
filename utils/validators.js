@@ -1,5 +1,5 @@
 function validateName(name) {
-  const reg = new RegExp(/[a-zA-Z][a-zA-Z]+[a-zA-Z]$/);
+  const reg = new RegExp(/[mma-zA-Z][a-zA-Z]+[a-zA-Z]$/);
   return reg.test(name);
 }
 function validateEmail(email) {
